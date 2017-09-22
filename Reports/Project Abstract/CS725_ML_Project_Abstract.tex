@@ -35,12 +35,18 @@
 The project involves using a neural network with memory to be able to perform well on games which require the agent to remember things from the past.
 
 \section{Approaches}
-The main idea is to use traditional reinforcement learning methods like DQN supplemented with memory. There will be a few CNN layers in the beginning and a network for Q learning in the end. In between, we will explore different methods of adding a memory layer. Initially, we aim to implement the architectures given in the below papers and see how it performs in the game that we have chosen. Later, we may make improvements to it if possible.
+The main idea is to use traditional reinforcement learning methods like Deep Q network (DQN) supplemented with memory. There will be a few CNN layers in the beginning and a network for Q learning in the end. In between, we will explore different methods of adding a memory layer. Initially, we aim to implement the architectures given in the below papers and see how it performs in the game that we have chosen. Later, we may make improvements to it if possible.
 
 \section{Research papers}
-Control of Memory, Active Perception, and Action in Minecraft [\url{http://proceedings.mlr.press/v48/oh16.pdf}]
-Neural Map: Structured Memory For Deep Reinforcement Learning [\url{https://arxiv.org/pdf/1702.08360.pdf}]
-Neural Turing Machine [\url{https://arxiv.org/pdf/1410.5401.pdf}]
+\begin{itemize}
+\item Control of Memory, Active Perception, and Action in Minecraft \newline
+  [\url{http://proceedings.mlr.press/v48/oh16.pdf}]
+\item Neural Map: Structured Memory For Deep Reinforcement Learning \newline
+  [\url{https://arxiv.org/pdf/1702.08360.pdf}]
+\item Neural Turing Machine \newline
+  [\url{https://arxiv.org/pdf/1410.5401.pdf}]
+\end{itemize}
+
 
 \section{Data sets}
 In our case it would be a game instead of dataset. The game should be such that memory would be useful in playing well which means, ideally, the game should be a partial information game and an observation in past will be useful in making a decision at present. Strategy games with fog of war are ideal but they have a huge action space which may make it too hard to train the agent with the hardware resources that we have. Hence, as of now, one of the games we are considering is Montezuma Revenge Atari game. Other option could be creating custom tasks like it is done in “Control of Memory, Active Perception, and Action in Minecraft”

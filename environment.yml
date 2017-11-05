@@ -1,0 +1,11 @@
+name: rlmem
+dependencies:
+- python=3.6.1
+- pip:
+    - numpy
+    - gym
+    - gym[atari]
+    - tensorflow-gpu
+    - keras
+    - scikit-image
+    - h5py

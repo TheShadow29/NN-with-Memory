@@ -9,3 +9,4 @@ dependencies:
     - keras
     - scikit-image
     - h5py
+    - tensorboard_logger

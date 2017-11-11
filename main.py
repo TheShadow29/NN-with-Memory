@@ -1,10 +1,12 @@
 from models.dqn import DQNAgent
 from util import gym_util
+from tensorboard_logger import configure, log_value
 
 import gym
 
 if __name__ == "__main__":
     env_name = 'Pong-v0'
+    configure('summary/' + env_name)
     env = gym.make(env_name)
     obs_size = env.observation_space.shape  # Size of observation from environment
     frame_width = 84  # Resized frame width
@@ -24,7 +26,7 @@ if __name__ == "__main__":
     replay_size = 40000  # Number of replay memory the agent uses for training
     batch_size = 32  # Mini batch size
     target_update_interval = 10000  # The frequency with which the target network is updated
-    train_interval = 4  # The agent selects 4 actions between successive updates
+    train_interval = 400  # The agent selects 4 actions between successive updates
 
     learning_rate = 0.00025  # Learning rate used by RMSProp
     momentum = 0.95  # Momentum used by RMSProp
@@ -82,4 +84,9 @@ if __name__ == "__main__":
                 print("episode: {}/{}, score: {}, avg max q: {}, episode duration: {}, e: {:.2}"
                       .format(e, n_episodes, total_reward, total_max_q / episode_duration, episode_duration,
                               agent.epsilon))
+                log_value('Episode', e, e)
+                log_value('Score', total_reward, e)
+                log_value('Avg max Q', total_max_q / episode_duration, e)
+                log_value('Episode duration', episode_duration, e)
+                log_value('Epsilon', agent.epsilon, e)
                 break

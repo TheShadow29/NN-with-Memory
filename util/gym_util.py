@@ -2,6 +2,7 @@ import numpy as np
 from skimage.color import rgb2gray
 from skimage.transform import resize
 import tensorflow as tf
+import keras.backend as K
 
 
 def init_state(obs, obs_shape, state_len):
@@ -24,5 +25,16 @@ def huber_loss(y_true, y_pred):
     error = tf.abs(y_true - y_pred)
     quadratic_part = tf.clip_by_value(error, 0.0, 1.0)
     linear_part = error - quadratic_part
+    num_act = tf.to_float(K.shape(y_pred)[1])
+    loss = tf.multiply(tf.reduce_mean(0.5 * tf.square(quadratic_part) + linear_part), num_act)
+    return loss
+
+
+def huber_loss_1d(y_true, y_pred):
+    y_pred = tf.reduce_max(y_pred, axis=1)
+    error = tf.abs(y_true - y_pred)
+    quadratic_part = tf.clip_by_value(error, 0.0, 1.0)
+    linear_part = error - quadratic_part
     loss = tf.reduce_mean(0.5 * tf.square(quadratic_part) + linear_part)
     return loss
+

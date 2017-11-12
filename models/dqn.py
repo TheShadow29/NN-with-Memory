@@ -1,10 +1,10 @@
 import random
 import numpy as np
 from collections import deque
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Conv2D, Flatten
 from keras.optimizers import RMSprop
-from keras.callbacks import TensorBoard
+import pickle
 
 from util import gym_util
 
@@ -12,8 +12,7 @@ from util import gym_util
 class DQNAgent:
     def __init__(self, state_size, action_size, gamma, epsilon_init=1.0, epsilon_min=0.1,
                  exploration_steps=1000000, memory_size=40000, init_replay_size=20000,
-                 learning_rate=0.00025, momentum=0.95, min_grad=0.01,
-                 logdir='summary/'):
+                 learning_rate=0.00025, momentum=0.95, min_grad=0.01):
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=memory_size)
@@ -36,6 +35,7 @@ class DQNAgent:
         model.add(Dense(512, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss=gym_util.huber_loss, optimizer=RMSprop(lr=learning_rate, rho=momentum, epsilon=min_grad))
+        # model.compile(loss=gym_util.huber_loss_1d, optimizer=RMSprop(lr=learning_rate, rho=momentum, epsilon=min_grad))
         return model
 
     def remember(self, state, action, reward, next_state, done):
@@ -65,16 +65,41 @@ class DQNAgent:
 
         q_next_state = self.target_model.predict(next_state_batch)
         y_batch = reward_batch + (1 - done_batch) * self.gamma * np.max(q_next_state, axis=1)
+
         q_cur = self.model.predict(state_batch)
         for i in range(q_cur.shape[0]):
             q_cur[i, action_batch[i]] = y_batch[i]
-        self.model.fit(state_batch, q_cur, verbose=0)
+        self.model.fit(state_batch, q_cur, epochs=5, verbose=0)
+        # self.model.fit(state_batch, y_batch, epochs=1, verbose=0)
 
     def update_target(self):
         self.target_model.set_weights(self.model.get_weights())
 
     def load(self, name):
-        self.model.load_weights(name)
+        with open(name + 'config', 'rb') as f:
+            self.state_size = pickle.load(f)
+            self.action_size = pickle.load(f)
+            self.memory = pickle.load(f)
+            self.init_replay_size = pickle.load(f)
+            self.gamma = pickle.load(f)
+            self.epsilon = pickle.load(f)
+            self.epsilon_min = pickle.load(f)
+            self.epsilon_decrease = pickle.load(f)
+            self.t = pickle.load(f)
+
+        self.model = load_model(name + 'model')
+        self.target_model = load_model(name + 'target')
 
     def save(self, name):
-        self.model.save_weights(name)
+        with open(name + 'config', 'wb') as f:
+            pickle.dump(self.state_size, f)
+            pickle.dump(self.action_size, f)
+            pickle.dump(self.memory, f)
+            pickle.dump(self.gamma, f)
+            pickle.dump(self.epsilon, f)
+            pickle.dump(self.epsilon_min, f)
+            pickle.dump(self.epsilon_decrease, f)
+            pickle.dump(self.t, f)
+
+        self.model.save(name + 'model')
+        self.target_model.save(name + 'target')

@@ -5,8 +5,8 @@ from util import gym_util
 import gym
 from tensorboard_logger import configure, log_value
 import time
-import pickle
 import os
+import numpy as np
 
 if __name__ == "__main__":
     env_name = 'Pong-v0'
@@ -20,8 +20,8 @@ if __name__ == "__main__":
     max_episode_length = 1000000  # Time after which an episode is terminated
     n_episodes = 12000  # Number of episodes the agent plays
     no_op_steps = 30  # Number of initial steps to not take actions
-    agent_model = 'dqn'
-    nn_mem_size = 256
+    agent_model = 'mqn'
+    nn_mem_size = 512
 
     epsilon_init = 1.0  # Initial value of epsilon in epsilon-greedy
     epsilon_min = 0.1  # Minimum value of epsilon in epsilon-greedy
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     save_interval = 30000  # The frequency with which the network is saved
     load_network = False
-    load_network_path = ''
+    load_network_path = 'saved_networks/' + env_name + '/' + '1510501206'
     save_network_path = 'saved_networks/' + env_name + '/' + str(time.time()).split('.')[0]
     save_summary_path = 'summary/' + env_name + '/' + str(time.time()).split('.')[0]
     os.makedirs(os.path.dirname(save_network_path), exist_ok=True)
@@ -76,6 +76,7 @@ if __name__ == "__main__":
             action, q_value = agent.act(state)
             total_max_q += q_value
             next_obs, reward, done, _ = env.step(action)
+            reward = np.clip(reward, -1, 1)
             next_state = gym_util.add_obs(state, next_obs, (frame_width, frame_height))
             total_reward += reward
             agent.remember(state, action, reward, next_state, done)

@@ -80,15 +80,14 @@ class DQNAgent:
             self.state_size = pickle.load(f)
             self.action_size = pickle.load(f)
             self.memory = pickle.load(f)
-            self.init_replay_size = pickle.load(f)
             self.gamma = pickle.load(f)
             self.epsilon = pickle.load(f)
             self.epsilon_min = pickle.load(f)
             self.epsilon_decrease = pickle.load(f)
             self.t = pickle.load(f)
 
-        self.model = load_model(name + 'model')
-        self.target_model = load_model(name + 'target')
+        self.model = load_model(name + 'model', custom_objects={'huber_loss': gym_util.huber_loss})
+        self.target_model = load_model(name + 'target', custom_objects={'huber_loss': gym_util.huber_loss})
 
     def save(self, name):
         with open(name + 'config', 'wb') as f:

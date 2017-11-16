@@ -1,5 +1,10 @@
 from gym.envs.registration import register
 
+register(
+    id='maze-test-v0',
+    entry_point='gym_maze.envs:MazeEnvTest',
+    timestep_limit=2000,
+)
 
 register(
     id='maze-v0',

@@ -1,6 +1,6 @@
 import os
-from gym_maze.envs.maze_view_2d import Maze
-
+# from gym_maze.envs.maze_view_2d import Maze
+from maze_view_2d import Maze, MazeView2D
 if __name__ == "__main__":
 
     # check if the folder "maze_samples" exists in the current working directory
@@ -19,7 +19,12 @@ if __name__ == "__main__":
         if i == 999:
             raise ValueError("There are already 999 mazes in the %s." % dir_name)
 
-    maze = Maze(maze_size=(5, 5))
+    maze = Maze(maze_size=(5, 5), num_portals=2)
+    # maze2d = MazeView2D()
+    # maze.update()
+    # pdb.set_trace()
     maze.save_maze(maze_path)
     print("New maze generated and saved at %s." %  maze_path)
-
+    # maze_new = maze.load_maze(maze_path)
+    # maze2d = MazeView2D(maze_in=maze_new)
+    # maze2d.update()

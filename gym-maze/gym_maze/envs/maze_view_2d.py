@@ -7,7 +7,7 @@ import pdb
 
 class MazeView2D:
 
-    def __init__(self, maze_name="Maze2D", maze_file_path=None,
+    def __init__(self, maze_name="Maze2D", maze_in=None, maze_file_path=None,
                  maze_size=(30, 30), screen_size=(600, 600),
                  has_loops=False, num_portals=0):
 
@@ -29,6 +29,9 @@ class MazeView2D:
                 else:
                     raise FileExistsError("Cannot find %s." % maze_file_path)
             self.__maze = Maze(maze_cells=Maze.load_maze(maze_file_path))
+
+        if maze_in is not None:
+            self.__maze = maze_in
 
         self.maze_size = self.__maze.maze_size
         # to show the right and bottom border
@@ -106,6 +109,30 @@ class MazeView2D:
                 self.__robot = np.array(self.maze.get_portal(tuple(self.robot)).teleport(tuple(self.robot)))
             self.__draw_robot(transparency=255)
 
+    def obs_space(self):
+        dirns = ["N", "W", "S", "E"]
+        out_sur = [self.__robot]
+        maze_color_dict = self.maze.get_col_dict()
+        # pdb.set_trace()
+        if self.maze.is_color_cell(self.__robot):
+
+            out_sur.append(maze_color_dict[tuple(self.__robot)].color)
+        else:
+            # white is for walls = 3
+            out_sur.append(3)
+        for dirn in dirns:
+            if self.__maze.is_open(self.__robot, dirn):
+                # pdb.set_trace()
+                rob_n = self.__robot + np.array(self.__maze.COMPASS[dirn])
+                if self.maze.is_color_cell(rob_n):
+                    out_sur.append(maze_color_dict[tuple(rob_n)].color)
+                else:
+                    out_sur.append(3)
+            else:
+                # Z denotes wall = 4
+                out_sur.append(4)
+        return out_sur
+
     def reset_robot(self):
 
         self.__draw_robot(transparency=0)
@@ -125,6 +152,7 @@ class MazeView2D:
             self.__draw_entrance()
             self.__draw_goal()
             self.__draw_portals()
+            self.__draw_color_blocks()
             self.__draw_robot()
 
 
@@ -218,11 +246,11 @@ class MazeView2D:
         # pdb.set_trace()
         for color_c in self.maze.colors:
             # pdb.set_trace()
-            if color_c.color == 'r':
+            if color_c.color == 0:
                 c = (255, 0, 0)
-            elif color_c.color == 'b':
+            elif color_c.color == 1:
                 c = (0, 255, 0)
-            elif color_c.color == 'g':
+            elif color_c.color == 2:
                 c = (0, 0, 255)
             self.__colour_cell(color_c.location, colour=c, transparency=transparency)
 
@@ -312,7 +340,11 @@ class Maze:
                 raise ValueError("maze_size must be a tuple: (width, height).")
             self.maze_size = maze_size
 
-            self._generate_maze()
+            # self._generate_maze()
+            self._gen_maze_new()
+
+    def get_col_dict(self):
+        return self.__colors_dict
 
     def save_maze(self, file_path):
 
@@ -336,6 +368,18 @@ class Maze:
 
         else:
             return np.load(file_path, allow_pickle=False, fix_imports=True)
+
+    def _gen_maze_new(self):
+        self.maze_cells = np.zeros(self.maze_size, dtype=int)
+        mat = np.zeros(self.maze_size, dtype=int)
+        mat[0, :] = 1
+        mat[-2, :] = 1
+        mat[:, self.maze_size[1]//2] = 1
+        self.__break_defined_walls(mat.T)
+
+        if self.num_colors > 0:
+            # self.__set_random_colors(num_color_list=self.num_colors)
+            self.__set_defined_colors(num_color_list=self.num_colors)
 
     def _generate_maze(self):
 
@@ -363,7 +407,7 @@ class Maze:
                 if 0 <= x1 < self.MAZE_W and 0 <= y1 < self.MAZE_H:
                     # if all four walls still exist
                     if self.all_walls_intact(self.maze_cells[x1, y1]):
-                    #if self.num_walls_broken(self.maze_cells[x1, y1]) <= 1:
+                        # if self.num_walls_broken(self.maze_cells[x1, y1]) <= 1:
                         neighbours[dir_key] = (x1, y1)
 
             # if there is a neighbour
@@ -411,6 +455,16 @@ class Maze:
                     self.maze_cells[x, y] = self.__break_walls(self.maze_cells[x, y], dir)
                     break
 
+    def __break_defined_walls(self, mat):
+        # mat is binary
+        # Note : Did not consider boundary conditions
+        for r in range(mat.shape[0] - 1):
+            for c in range(mat.shape[1] - 1):
+                if mat[r, c] == 1 and mat[r, c+1] == 1:
+                    self.maze_cells[r, c] = self.__break_walls(self.maze_cells[r, c], "S")
+                if mat[r, c] == 1 and mat[r+1, c] == 1:
+                    self.maze_cells[r, c] = self.__break_walls(self.maze_cells[r, c], "E")
+
     def __set_random_portals(self, num_portal_sets, set_size=2):
         # find some random cells to break
         num_portal_sets = int(num_portal_sets)
@@ -452,7 +506,7 @@ class Maze:
         # num_portal_sets = min(max_portal_sets, num_portal_sets)
 
         # the first and last cells are reserved
-        cell_ids = random.sample(range(1, self.MAZE_W * self.MAZE_H - 1), num_color_list)
+        # cell_ids = random.sample(range(1, self.MAZE_W * self.MAZE_H - 1), num_color_list)
         color_list = ['r', 'g', 'b']
         for i in range(num_color_list):
             # sample the set_size number of sell
@@ -476,6 +530,18 @@ class Maze:
             # create a dictionary of portals
             # for portal_location in portal_locations:
             # self.__portals_dict[portal_location] = portal
+
+    def __set_defined_colors(self, num_color_list):
+        cell_ids = []
+        cell_ids.append((self.MAZE_H - 1, 0))
+        cell_ids.append((self.MAZE_H - 1, self.MAZE_W - 2))
+        cell_ids.append((0, self.MAZE_W - 2))
+        color_list = ['r', 'g', 'b']
+
+        for ind, cid in enumerate(cell_ids):
+            color = Color_cell(cid, color_list[ind])
+            self.__colors.append(color)
+            self.__colors_dict[cid] = color
 
     def is_open(self, cell_id, dir):
         # check if it would be out-of-bound
@@ -504,6 +570,9 @@ class Maze:
     def is_portal(self, cell):
         return tuple(cell) in self.__portals_dict
 
+    def is_color_cell(self, cell):
+        return tuple(cell) in self.__colors_dict
+
     @property
     def portals(self):
         return tuple(self.__portals)
@@ -511,6 +580,10 @@ class Maze:
     @property
     def colors(self):
         return tuple(self.__colors)
+
+    @property
+    def colors_dict(self):
+        return self.__colors_dict
 
     def get_portal(self, cell):
         if cell in self.__portals_dict:
@@ -618,8 +691,9 @@ class Color_cell:
     def __init__(self, location, color):
         # self.__locations = list()
         # self.__locations.append(tuple(locations), color)
+        color_dict = {'r': 0, 'b': 1, 'g': 2}
         self.__location = location
-        self.color = color
+        self.color = color_dict[color]
         # self.__locations = []
         # for location in enumerate(locations):
         #     if isinstance(location, (tuple, list)):

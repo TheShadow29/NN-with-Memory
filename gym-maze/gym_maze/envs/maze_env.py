@@ -79,11 +79,12 @@ class MazeEnv(gym.Env):
             reward = -0.1/(self.maze_size[0]*self.maze_size[1])
             done = False
 
-        self.state = self.maze_view.robot
+        # self.state = self.maze_view.robot
+        self.obs_space = self.maze_view.obs_space()
 
         info = {}
 
-        return self.state, reward, done, info
+        return self.obs_space, reward, done, info
 
     def _reset(self):
         self.maze_view.reset_robot()
@@ -100,6 +101,13 @@ class MazeEnv(gym.Env):
             self.maze_view.quit_game()
 
         return self.maze_view.update(mode)
+
+
+class MazeEnvTest(MazeEnv):
+    def __init__(self):
+        # super(MazeEnvTest, self).__init__(maze_file="maze2d_006.npy")
+        # super(MazeEnvTest, self).__init__(maze_size=(5, 5))
+        super(MazeEnvTest, self).__init__(maze_size=(10, 10))
 
 
 class MazeEnvSample5x5(MazeEnv):

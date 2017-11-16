@@ -72,17 +72,36 @@ class MazeEnv(gym.Env):
         else:
             self.maze_view.move_robot(action)
 
-        if np.array_equal(self.maze_view.robot, self.maze_view.goal):
-            reward = 1
-            done = True
-        else:
-            reward = -0.1/(self.maze_size[0]*self.maze_size[1])
-            done = False
+        # if np.array_equal(self.maze_view.robot, self.maze_view.goal):
+        #     reward = 1
+        #     done = True
+        # else:
+        #     reward = -0.1/(self.maze_size[0]*self.maze_size[1])
+        #     done = False
 
         # self.state = self.maze_view.robot
         self.obs_space = self.maze_view.obs_space()
-
+        # See if red or yellow
+        done = False
+        reward = -0.1/(self.maze_size[0]*self.maze_size[1])
+        if not self.key_seen:
+            if self.obs_space[1] == 0:
+                self.key_seen = True
+                # if red then go to blue
+                self.door = 1
+            if self.obs_space[1] == 5:
+                # if yellow go to green
+                self.key_seen = True
+                self.door = 2
+        else:
+            if self.obs_space[1] == self.door:
+                reward = 1
+                done = True
+            if self.obs_space[1] == (3 - self.door):
+                reward = -1
+                done = True
         info = {}
+        print(self.obs_space[1])
 
         return self.obs_space, reward, done, info
 
@@ -91,6 +110,8 @@ class MazeEnv(gym.Env):
         self.state = np.zeros(2)
         self.steps_beyond_done = None
         self.done = False
+        # self.door = 0
+        self.key_seen = False
         return self.state
 
     def is_game_over(self):

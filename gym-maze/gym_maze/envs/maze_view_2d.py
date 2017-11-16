@@ -68,10 +68,10 @@ class MazeView2D:
         self.__draw_robot()
 
         # show the entrance
-        self.__draw_entrance()
+        # self.__draw_entrance()
 
         # show the goal
-        self.__draw_goal()
+        # self.__draw_goal()
 
     def update(self, mode="human"):
         try:
@@ -115,7 +115,6 @@ class MazeView2D:
         maze_color_dict = self.maze.get_col_dict()
         # pdb.set_trace()
         if self.maze.is_color_cell(self.__robot):
-
             out_sur.append(maze_color_dict[tuple(self.__robot)].color)
         else:
             # white is for walls = 3
@@ -149,8 +148,8 @@ class MazeView2D:
     def __view_update(self, mode="human"):
         if not self.__game_over:
             # update the robot's position
-            self.__draw_entrance()
-            self.__draw_goal()
+            # self.__draw_entrance()
+            # self.__draw_goal()
             self.__draw_portals()
             self.__draw_color_blocks()
             self.__draw_robot()
@@ -249,9 +248,11 @@ class MazeView2D:
             if color_c.color == 0:
                 c = (255, 0, 0)
             elif color_c.color == 1:
-                c = (0, 255, 0)
-            elif color_c.color == 2:
                 c = (0, 0, 255)
+            elif color_c.color == 2:
+                c = (0, 255, 0)
+            elif color_c.color == 5:
+                c = (255, 255, 0)
             self.__colour_cell(color_c.location, colour=c, transparency=transparency)
 
     def __colour_cell(self, cell, colour, transparency):
@@ -536,11 +537,22 @@ class Maze:
         cell_ids.append((self.MAZE_H - 1, 0))
         cell_ids.append((self.MAZE_H - 1, self.MAZE_W - 2))
         cell_ids.append((0, self.MAZE_W - 2))
-        color_list = ['r', 'g', 'b']
+        color_list1 = ['r', 'y']
+        color_list2 = ['g', 'b']
 
-        for ind, cid in enumerate(cell_ids):
-            color = Color_cell(cid, color_list[ind])
+        cell_color = random.sample(color_list1, 1)[0]
+        cid = cell_ids[0]
+        color = Color_cell(cid, cell_color)
+        self.__colors.append(color)
+        self.__colors_dict[cid] = color
+
+        for ind, cid in enumerate(cell_ids[1:]):
+            cell_color = random.sample(color_list2, 1)[0]
+            color_list2.pop(color_list2.index(cell_color))
+            # color = Color_cell(cid, color_list[ind])
+            color = Color_cell(cid, cell_color)
             self.__colors.append(color)
+
             self.__colors_dict[cid] = color
 
     def is_open(self, cell_id, dir):
@@ -691,7 +703,7 @@ class Color_cell:
     def __init__(self, location, color):
         # self.__locations = list()
         # self.__locations.append(tuple(locations), color)
-        color_dict = {'r': 0, 'b': 1, 'g': 2}
+        color_dict = {'r': 0, 'b': 1, 'g': 2, 'y': 5}
         self.__location = location
         self.color = color_dict[color]
         # self.__locations = []

@@ -5,6 +5,7 @@ from keras.models import Sequential, load_model
 from keras.layers import Dense, Conv2D, Flatten
 from keras.optimizers import RMSprop
 import pickle
+import pdb
 
 from util import gym_util
 
@@ -121,7 +122,8 @@ class SimpleDQNAgent:
     def _build_model(self, learning_rate, momentum, min_grad):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(32, activation='relu', input_shape=self.state_size))
+        model.add(Flatten(input_shape=self.state_size))
+        model.add(Dense(32, activation='relu'))
         model.add(Dense(32, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss=gym_util.huber_loss, optimizer=RMSprop(lr=learning_rate, rho=momentum, epsilon=min_grad))
@@ -131,6 +133,7 @@ class SimpleDQNAgent:
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
+        state = state.reshape((1, state.shape[0], state.shape[1]))
         self.t += 1
         if self.epsilon > self.epsilon_min and self.t >= self.init_replay_size:
             self.epsilon -= self.epsilon_decrease
@@ -139,15 +142,20 @@ class SimpleDQNAgent:
             return random.randrange(self.action_size), 0
 
         act_values = self.model.predict(state)
-
+        # print(act_values)
         return np.argmax(act_values[0]), np.max(act_values[0])  # returns action, Q value
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
         state_batch, action_batch, reward_batch, next_state_batch, done_batch = zip(*minibatch)
+        state_batch = np.array(state_batch)
+        action_batch = np.array(action_batch)
+        next_state_batch = np.array(next_state_batch)
+        reward_batch = np.array(reward_batch)
         done_batch = np.array(done_batch) + 0
-
+        # pdb.set_trace()
         q_next_state = self.target_model.predict(next_state_batch)
+        # pdb.set_trace()
         y_batch = reward_batch + (1 - done_batch) * self.gamma * np.max(q_next_state, axis=1)
 
         q_cur = self.model.predict(state_batch)

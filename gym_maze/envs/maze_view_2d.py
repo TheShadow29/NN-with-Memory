@@ -130,10 +130,10 @@ class MazeView2D:
             else:
                 # Z denotes wall = 4
                 out_sur.append(4)
-        return out_sur
+        return np.array(out_sur)
 
     def reset_robot(self):
-
+        self.maze._gen_maze_new()
         self.__draw_robot(transparency=0)
         self.__robot = np.zeros(2, dtype=int)
         self.__draw_robot(transparency=255)

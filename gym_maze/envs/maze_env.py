@@ -11,7 +11,7 @@ class MazeEnv(gym.Env):
         "render.modes": ["human", "rgb_array"],
     }
 
-    ACTION = ["N", "S", "E", "W"]
+    ACTION = ["N", "W", "S", "E"]
 
     def __init__(self, maze_file=None, maze_size=None, mode=None):
 
@@ -91,10 +91,12 @@ class MazeEnv(gym.Env):
                 self.key_seen = True
                 # if red then go to blue
                 self.door = 1
+                reward = 0.5
             if self.obs_space[0] == 5:
                 # if yellow go to green
                 self.key_seen = True
                 self.door = 2
+                reward = 0.5
         else:
             if self.obs_space[0] == self.door:
                 reward = 1
@@ -104,7 +106,7 @@ class MazeEnv(gym.Env):
                 done = True
         info = {}
         # print(self.obs_space[0])
-
+        # pdb.set_trace()
         return self.obs_space, reward, done, info
 
     def _reset(self):
@@ -115,6 +117,7 @@ class MazeEnv(gym.Env):
         # self.door = 0
         self.key_seen = False
         self.obs_space = self.maze_view.obs_space()
+        # pdb.set_trace()
         return self.obs_space
 
     def is_game_over(self):

@@ -8,11 +8,12 @@ from tensorboard_logger import configure, log_value
 import time
 import os
 import numpy as np
+import pdb
 
 if __name__ == "__main__":
     env_name = 'maze-test-v0'
     env = gym.make(env_name)
-    obs_size = env.observation_space.shape  # Size of observation from environment
+    obs_size = env.observation_space.shape[0]  # Size of observation from environment
     state_length = 4  # Number of most recent frames to produce the input to the network
     action_size = env.action_space.n  # Number of actions
     gamma = 0.99  # Discount factor
@@ -65,10 +66,13 @@ if __name__ == "__main__":
         episode_duration = 0
         state = gym_util.init_state(obs, obs_size, state_length)
         for time in range(max_episode_length):
-            env.render()
+            # env.render()
             episode_duration += 1
             action, q_value = agent.act(state)
+            # print(action, type(action))
+            action = int(action)
             total_max_q += q_value
+            # pdb.set_trace()
             next_obs, reward, done, _ = env.step(action)
             reward = np.clip(reward, -1, 1)
             next_state = gym_util.add_obs(state, next_obs, obs_size)

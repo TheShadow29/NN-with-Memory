@@ -41,9 +41,11 @@ class MazeEnv(gym.Env):
         self.action_space = spaces.Discrete(2*len(self.maze_size))
 
         # observation is the x, y coordinate of the grid
-        low = np.zeros(len(self.maze_size), dtype=int)
-        high =  np.array(self.maze_size, dtype=int) - np.ones(len(self.maze_size), dtype=int)
-        self.observation_space = spaces.Box(low, high)
+        # low = np.zeros(len(self.maze_size), dtype=int)
+        # high =  np.array(self.maze_size, dtype=int) - np.ones(len(self.maze_size), dtype=int)
+        low = 0
+        high = 5
+        self.observation_space = spaces.Box(low, high, shape=5)
 
         # initial condition
         self.state = None
@@ -85,23 +87,23 @@ class MazeEnv(gym.Env):
         done = False
         reward = -0.1/(self.maze_size[0]*self.maze_size[1])
         if not self.key_seen:
-            if self.obs_space[1] == 0:
+            if self.obs_space[0] == 0:
                 self.key_seen = True
                 # if red then go to blue
                 self.door = 1
-            if self.obs_space[1] == 5:
+            if self.obs_space[0] == 5:
                 # if yellow go to green
                 self.key_seen = True
                 self.door = 2
         else:
-            if self.obs_space[1] == self.door:
+            if self.obs_space[0] == self.door:
                 reward = 1
                 done = True
-            if self.obs_space[1] == (3 - self.door):
+            if self.obs_space[0] == (3 - self.door):
                 reward = -1
                 done = True
         info = {}
-        print(self.obs_space[1])
+        # print(self.obs_space[0])
 
         return self.obs_space, reward, done, info
 
@@ -112,7 +114,8 @@ class MazeEnv(gym.Env):
         self.done = False
         # self.door = 0
         self.key_seen = False
-        return self.state
+        self.obs_space = self.maze_view.obs_space()
+        return self.obs_space
 
     def is_game_over(self):
         return self.maze_view.game_over

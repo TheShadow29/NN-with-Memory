@@ -111,7 +111,7 @@ class MazeView2D:
 
     def obs_space(self):
         dirns = ["N", "W", "S", "E"]
-        out_sur = [self.__robot]
+        out_sur = []
         maze_color_dict = self.maze.get_col_dict()
         # pdb.set_trace()
         if self.maze.is_color_cell(self.__robot):

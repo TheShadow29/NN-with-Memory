@@ -6,17 +6,25 @@ import keras.backend as K
 
 
 def init_state(obs, obs_shape, state_len):
-    processed_obs = np.uint8(resize(rgb2gray(obs), obs_shape) * 255)
-    processed_obs = processed_obs.reshape((obs_shape[0], obs_shape[1]))
-    state = [processed_obs for _ in range(state_len)]
-    state = np.stack(state, axis=2)
+    if len(obs_shape) == 2:
+        processed_obs = np.uint8(resize(rgb2gray(obs), obs_shape) * 255)
+        processed_obs = processed_obs.reshape((obs_shape[0], obs_shape[1]))
+        state = [processed_obs for _ in range(state_len)]
+        state = np.stack(state, axis=2)
+    else:
+        state = [obs for _ in range(state_len)]
+        state = np.stack(state, axis=0)
     return state
 
 
 def add_obs(state, obs, obs_shape):
-    processed_obs = np.uint8(resize(rgb2gray(obs), obs_shape) * 255)
-    processed_obs = processed_obs.reshape((obs_shape[0], obs_shape[1], 1))
-    next_state = np.append(state[:, :, 1:], processed_obs, axis=2)
+    if len(obs_shape) == 2:
+        processed_obs = np.uint8(resize(rgb2gray(obs), obs_shape) * 255)
+        processed_obs = processed_obs.reshape((obs_shape[0], obs_shape[1], 1))
+        next_state = np.append(state[:, :, 1:], processed_obs, axis=2)
+    else:
+        obs = obs.reshape((1, obs_shape[0]))
+        next_state = np.append(state[1:, :], obs, axis=0)
     return next_state
 
 

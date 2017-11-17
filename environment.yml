@@ -10,3 +10,4 @@ dependencies:
     - scikit-image
     - h5py
     - tensorboard_logger
+    - pygame

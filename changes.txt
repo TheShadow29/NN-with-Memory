@@ -1,0 +1,23 @@
+Environment
+=================================================
+Key seen added to observation
+Added x,y to observation
+Size reduced to 7x7
+Max time 5000
+Reward for key removed
+Only one key (red) and one door (blue)
+
+So the problem now is to take the key and then go to the door.
+Observation is  (surrounding colors, x, y, key_seen) - total 8 features
+
+Architectures
+=================================================
+DRQN, RMQN added - Working but not 100% sure about the LSTM layer in RMQN
+Observation is one-hot encoded before sending to the networks
+
+Hyperparameter changes
+=================================================
+state_length: 4 to 20
+n_episodes: 12k to 2k (with additional condition to stop when 20 consecutive episodes time out)
+exploration_steps: 1m to 500k
+init_replay_size: 20k to 50k

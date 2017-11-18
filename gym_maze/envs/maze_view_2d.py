@@ -130,6 +130,8 @@ class MazeView2D:
             else:
                 # Z denotes wall = 4
                 out_sur.append(4)
+
+        out_sur += list(self.__robot)
         return np.array(out_sur)
 
     def reset_robot(self):
@@ -536,9 +538,11 @@ class Maze:
         cell_ids = []
         cell_ids.append((self.MAZE_H - 1, 0))
         cell_ids.append((self.MAZE_H - 1, self.MAZE_W - 2))
-        cell_ids.append((0, self.MAZE_W - 2))
-        color_list1 = ['r', 'y']
-        color_list2 = ['g', 'b']
+        # cell_ids.append((0, self.MAZE_W - 2))
+        # color_list1 = ['r', 'y']
+        # color_list2 = ['g', 'b']
+        color_list1 = ['r']
+        color_list2 = ['b']
 
         cell_color = random.sample(color_list1, 1)[0]
         cid = cell_ids[0]

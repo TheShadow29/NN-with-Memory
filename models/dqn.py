@@ -133,7 +133,6 @@ class SimpleDQNAgent:
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        state = state.reshape((1, state.shape[0], state.shape[1]))
         self.t += 1
         if self.epsilon > self.epsilon_min and self.t >= self.init_replay_size:
             self.epsilon -= self.epsilon_decrease
@@ -141,8 +140,10 @@ class SimpleDQNAgent:
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size), 0
 
+        if len(state.shape) == 2:
+            state = state.reshape((1, state.shape[0], state.shape[1]))
         act_values = self.model.predict(state)
-        # print(act_values)
+
         return np.argmax(act_values[0]), np.max(act_values[0])  # returns action, Q value
 
     def replay(self, batch_size):
@@ -153,9 +154,8 @@ class SimpleDQNAgent:
         next_state_batch = np.array(next_state_batch)
         reward_batch = np.array(reward_batch)
         done_batch = np.array(done_batch) + 0
-        # pdb.set_trace()
+
         q_next_state = self.target_model.predict(next_state_batch)
-        # pdb.set_trace()
         y_batch = reward_batch + (1 - done_batch) * self.gamma * np.max(q_next_state, axis=1)
 
         q_cur = self.model.predict(state_batch)

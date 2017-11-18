@@ -159,6 +159,8 @@ class SimpleMQNAgent:
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size), 0
 
+        if len(state.shape) == 2:
+            state = state.reshape((1, state.shape[0], state.shape[1]))
         act_values = self.model.predict(state)
 
         return np.argmax(act_values[0]), np.max(act_values[0])  # returns action, Q value
@@ -166,6 +168,10 @@ class SimpleMQNAgent:
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
         state_batch, action_batch, reward_batch, next_state_batch, done_batch = zip(*minibatch)
+        state_batch = np.array(state_batch)
+        action_batch = np.array(action_batch)
+        next_state_batch = np.array(next_state_batch)
+        reward_batch = np.array(reward_batch)
         done_batch = np.array(done_batch) + 0
 
         q_next_state = self.target_model.predict(next_state_batch)

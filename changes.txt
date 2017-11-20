@@ -1,3 +1,24 @@
+20 Nov
+=================================================
+
+Environment
+=================================================
+One hot given by environment instead of calculating later
+5x5 map
+x, y removed from observation
+2000 time limit
+
+Architectures
+=================================================
+Epochs = 1 for DRQN, RMQN (RMQN might have some problems)
+
+Hyperparameter changes
+=================================================
+n_episodes: 2k to 5k (no early stopping)
+
+18 Nov
+=================================================
+
 Environment
 =================================================
 Key seen added to observation

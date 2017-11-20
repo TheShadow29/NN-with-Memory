@@ -131,7 +131,6 @@ class MazeView2D:
                 # Z denotes wall = 4
                 out_sur.append(4)
 
-        out_sur += list(self.__robot)
         return np.array(out_sur)
 
     def reset_robot(self):

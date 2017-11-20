@@ -67,7 +67,7 @@ class SimpleDRQNAgent:
         q_cur = self.model.predict(state_batch)
         for i in range(q_cur.shape[0]):
             q_cur[i, action_batch[i]] = y_batch[i]
-        self.model.fit(state_batch, q_cur, epochs=5, verbose=0)
+        self.model.fit(state_batch, q_cur, epochs=1, verbose=0)
 
     def update_target(self):
         self.target_model.set_weights(self.model.get_weights())

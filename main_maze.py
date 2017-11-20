@@ -16,13 +16,13 @@ if __name__ == "__main__":
     env_name = 'maze-test-v0'
     env = gym.make(env_name)
     obs_size = env.observation_space.shape[0]  # Size of observation from environment
-    max_obs = int(env.observation_space.high[0])
+    # max_obs = int(env.observation_space.high[0])
     state_length = 20  # Number of most recent frames to produce the input to the network
     action_size = env.action_space.n  # Number of actions
     gamma = 0.99  # Discount factor
     max_episode_length = 5000  # Time after which an episode is terminated
-    n_episodes = 2000  # Number of episodes the agent plays
-    agent_model = 'dqn'
+    n_episodes = 5000  # Number of episodes the agent plays
+    agent_model = 'rmqn'
 
     epsilon_init = 1.0  # Initial value of epsilon in epsilon-greedy
     epsilon_min = 0.1  # Minimum value of epsilon in epsilon-greedy
@@ -47,22 +47,22 @@ if __name__ == "__main__":
     configure(save_summary_path)
 
     if agent_model == 'dqn':
-        agent = SimpleDQNAgent((state_length, obs_size * max_obs), action_size, gamma,
+        agent = SimpleDQNAgent((state_length, obs_size), action_size, gamma,
                                epsilon_init=epsilon_init, epsilon_min=epsilon_min, exploration_steps=exploration_steps,
                                memory_size=replay_size, init_replay_size=init_replay_size, learning_rate=learning_rate,
                                momentum=momentum, min_grad=min_grad)
     elif agent_model == 'drqn':
-        agent = SimpleDRQNAgent((state_length, obs_size * max_obs), action_size, gamma,
+        agent = SimpleDRQNAgent((state_length, obs_size), action_size, gamma,
                                 epsilon_init=epsilon_init, epsilon_min=epsilon_min, exploration_steps=exploration_steps,
                                 memory_size=replay_size, init_replay_size=init_replay_size, learning_rate=learning_rate,
                                 momentum=momentum, min_grad=min_grad)
     elif agent_model == 'mqn':
-        agent = SimpleMQNAgent((state_length, obs_size * max_obs), action_size, gamma,
+        agent = SimpleMQNAgent((state_length, obs_size), action_size, gamma,
                                epsilon_init=epsilon_init, epsilon_min=epsilon_min, exploration_steps=exploration_steps,
                                memory_size=replay_size, init_replay_size=init_replay_size, learning_rate=learning_rate,
                                momentum=momentum, min_grad=min_grad)
     elif agent_model == 'rmqn':
-        agent = SimpleRMQNAgent((state_length, obs_size * max_obs), action_size, gamma,
+        agent = SimpleRMQNAgent((state_length, obs_size), action_size, gamma,
                                 epsilon_init=epsilon_init, epsilon_min=epsilon_min, exploration_steps=exploration_steps,
                                 memory_size=replay_size, init_replay_size=init_replay_size, learning_rate=learning_rate,
                                 momentum=momentum, min_grad=min_grad)
@@ -71,15 +71,15 @@ if __name__ == "__main__":
         agent.load(load_network_path)
 
     done = False
-    timeout_spree = 0
+    # timeout_spree = 0
 
     for e in range(n_episodes):
         obs = env.reset()
         total_reward = 0
         total_max_q = 0
         episode_duration = 0
-        state = gym_util.init_state(obs, obs_size, state_length, max_obs)
-        timeout_spree += 1
+        state = gym_util.init_state(obs, obs_size, state_length)
+        # timeout_spree += 1
         for time in range(max_episode_length):
             # env.render()
             episode_duration += 1
@@ -89,7 +89,7 @@ if __name__ == "__main__":
             # pdb.set_trace()
             next_obs, reward, done, _ = env.step(action)
             reward = np.clip(reward, -1, 1)
-            next_state = gym_util.add_obs(state, next_obs, obs_size, max_obs)
+            next_state = gym_util.add_obs(state, next_obs, obs_size)
             total_reward += reward
             agent.remember(state, action, reward, next_state, done)
             state = next_state
@@ -116,10 +116,10 @@ if __name__ == "__main__":
                 log_value('Avg max Q', total_max_q / episode_duration, e)
                 log_value('Episode duration', episode_duration, e)
                 log_value('Epsilon', agent.epsilon, e)
-                if episode_duration < 5000:
-                    timeout_spree = 0
+                # if episode_duration < 5000:
+                #     timeout_spree = 0
                 break
 
-        if timeout_spree >= 20:
-            print("Ending since agent didn't finish last 20 episodes")
-            break
+        # if timeout_spree >= 20:
+        #     print("Ending since agent didn't finish last 20 episodes")
+        #     break

@@ -43,10 +43,10 @@ class MazeEnv(gym.Env):
         # observation is the x, y coordinate of the grid
         # low = np.zeros(len(self.maze_size), dtype=int)
         # high = np.array(self.maze_size, dtype=int) - np.ones(len(self.maze_size), dtype=int)
-        low = np.zeros(26)
-        high = np.ones(26)
-        # high[-1] = self.maze_size[1]
-        # high[-2] = self.maze_size[0]
+        low = np.zeros(33)
+        high = np.ones(33)
+        high[-1] = self.maze_size[1]
+        high[-2] = self.maze_size[0]
 
         self.observation_space = spaces.Box(low, high)
 
@@ -102,16 +102,16 @@ class MazeEnv(gym.Env):
                 # reward = 0.5
         else:
             if self.obs_space[0] == self.door:
-                reward = 1
+                reward = 2
                 done = True
             if self.obs_space[0] == (3 - self.door):
-                reward = -1
+                reward = 1
                 done = True
         info = {}
-        self.obs_space = np.eye(5)[self.obs_space]
+        self.obs_space = np.eye(6)[self.obs_space]
         self.obs_space = self.obs_space.flatten()
         self.obs_space = np.append(self.obs_space, self.key_seen)
-        # self.obs_space = np.append(self.obs_space, self.maze_view.robot)
+        self.obs_space = np.append(self.obs_space, self.maze_view.robot)
         # print(self.obs_space[0])
         # pdb.set_trace()
         return self.obs_space, reward, done, info
@@ -124,10 +124,10 @@ class MazeEnv(gym.Env):
         # self.door = 0
         self.key_seen = False
         self.obs_space = self.maze_view.obs_space()
-        self.obs_space = np.eye(5)[self.obs_space]
+        self.obs_space = np.eye(6)[self.obs_space]
         self.obs_space = self.obs_space.flatten()
         self.obs_space = np.append(self.obs_space, self.key_seen)
-        # self.obs_space = np.append(self.obs_space, self.maze_view.robot)
+        self.obs_space = np.append(self.obs_space, self.maze_view.robot)
         # pdb.set_trace()
         return self.obs_space
 

@@ -1,3 +1,23 @@
+22 Nov
+=================================================
+
+Environment
+=================================================
+Multiple colors for key, door - correct key, door combo gives +2, wrong gives +1
+x, y added to observation
+
+Architectures
+=================================================
+tanh activation for LSTM in RMQN
+
+Hyperparameter changes
+=================================================
+n_episodes: 5k to 15k
+exploration_steps: 500000 to 1000000
+state_length: 20 to 50
+
+
+
 20 Nov
 =================================================
 
@@ -15,6 +35,8 @@ Epochs = 1 for DRQN, RMQN (RMQN might have some problems)
 Hyperparameter changes
 =================================================
 n_episodes: 2k to 5k (no early stopping)
+
+
 
 18 Nov
 =================================================

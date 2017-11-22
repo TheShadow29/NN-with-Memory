@@ -29,7 +29,7 @@ class SimpleRMQNAgent:
         input_obs = Input(shape=self.state_size)
         features = Dense(32, activation='relu')(input_obs)
         hist = Lambda(lambda x: x[:, 0:-1, :])(features)
-        h = LSTM(16, activation='linear')(features)
+        h = LSTM(16, activation='tanh')(features)
         m_val = Dense(16, activation='linear')(hist)
         m_key = Dense(16, activation='linear')(hist)
         hm = Dot(axes=-1)([m_key, h])

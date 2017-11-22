@@ -17,16 +17,16 @@ if __name__ == "__main__":
     env = gym.make(env_name)
     obs_size = env.observation_space.shape[0]  # Size of observation from environment
     # max_obs = int(env.observation_space.high[0])
-    state_length = 20  # Number of most recent frames to produce the input to the network
+    state_length = 50  # Number of most recent frames to produce the input to the network
     action_size = env.action_space.n  # Number of actions
     gamma = 0.99  # Discount factor
-    max_episode_length = 5000  # Time after which an episode is terminated
-    n_episodes = 5000  # Number of episodes the agent plays
-    agent_model = 'rmqn'
+    max_episode_length = 10000  # Time after which an episode is terminated
+    n_episodes = 15000  # Number of episodes the agent plays
+    agent_model = 'drqn'
 
     epsilon_init = 1.0  # Initial value of epsilon in epsilon-greedy
     epsilon_min = 0.1  # Minimum value of epsilon in epsilon-greedy
-    exploration_steps = 500000  # Number of frames over which the initial value of epsilon is linearly annealed
+    exploration_steps = 1000000  # Number of frames over which the initial value of epsilon is linearly annealed
 
     init_replay_size = 50000  # Number of steps to populate the replay memory before training starts
     replay_size = 100000  # Number of replay memory the agent uses for training
@@ -88,7 +88,7 @@ if __name__ == "__main__":
             total_max_q += q_value
             # pdb.set_trace()
             next_obs, reward, done, _ = env.step(action)
-            reward = np.clip(reward, -1, 1)
+            # reward = np.clip(reward, -1, 1)
             next_state = gym_util.add_obs(state, next_obs, obs_size)
             total_reward += reward
             agent.remember(state, action, reward, next_state, done)

@@ -166,16 +166,17 @@ class SimpleDQNAgent:
     def update_target(self):
         self.target_model.set_weights(self.model.get_weights())
 
-    def load(self, name):
-        with open(name + 'config', 'rb') as f:
-            self.state_size = pickle.load(f)
-            self.action_size = pickle.load(f)
-            self.memory = pickle.load(f)
-            self.gamma = pickle.load(f)
-            self.epsilon = pickle.load(f)
-            self.epsilon_min = pickle.load(f)
-            self.epsilon_decrease = pickle.load(f)
-            self.t = pickle.load(f)
+    def load(self, name, fresh=False):
+        if not fresh:
+            with open(name + 'config', 'rb') as f:
+                self.state_size = pickle.load(f)
+                self.action_size = pickle.load(f)
+                self.memory = pickle.load(f)
+                self.gamma = pickle.load(f)
+                self.epsilon = pickle.load(f)
+                self.epsilon_min = pickle.load(f)
+                self.epsilon_decrease = pickle.load(f)
+                self.t = pickle.load(f)
 
         self.model = load_model(name + 'model', custom_objects={'huber_loss': gym_util.huber_loss})
         self.target_model = load_model(name + 'target', custom_objects={'huber_loss': gym_util.huber_loss})

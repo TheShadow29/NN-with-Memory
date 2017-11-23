@@ -9,7 +9,7 @@ class MazeView2D:
 
     def __init__(self, maze_name="Maze2D", maze_in=None, maze_file_path=None,
                  maze_size=(30, 30), screen_size=(600, 600),
-                 has_loops=False, num_portals=0):
+                 has_loops=False, num_portals=0, complex_maze=False):
 
         # PyGame configurations
         pygame.init()
@@ -19,7 +19,8 @@ class MazeView2D:
 
         # Load a maze
         if maze_file_path is None:
-            self.__maze = Maze(maze_size=maze_size, has_loops=has_loops, num_portals=num_portals)
+            self.__maze = Maze(maze_size=maze_size, has_loops=has_loops, num_portals=num_portals,
+                               complex_maze=complex_maze)
         else:
             if not os.path.exists(maze_file_path):
                 dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -28,7 +29,7 @@ class MazeView2D:
                     maze_file_path = rel_path
                 else:
                     raise FileExistsError("Cannot find %s." % maze_file_path)
-            self.__maze = Maze(maze_cells=Maze.load_maze(maze_file_path))
+            self.__maze = Maze(maze_cells=Maze.load_maze(maze_file_path), complex_maze=complex_maze)
 
         if maze_in is not None:
             self.__maze = maze_in
@@ -317,7 +318,8 @@ class Maze:
         "W": (-1, 0)
     }
 
-    def __init__(self, maze_cells=None, maze_size=(10,10), has_loops=True, num_portals=0, num_colors=3):
+    def __init__(self, maze_cells=None, maze_size=(10,10), has_loops=True, num_portals=0, num_colors=3,
+                 complex_maze=False):
 
         # maze member variables
         self.maze_cells = maze_cells
@@ -328,6 +330,7 @@ class Maze:
         self.__colors = []
         self.num_portals = num_portals
         self.num_colors = num_colors
+        self.complex_maze = complex_maze
 
         # Use existing one if exists
         if self.maze_cells is not None:
@@ -508,7 +511,7 @@ class Maze:
         # num_portal_sets = min(max_portal_sets, num_portal_sets)
 
         # the first and last cells are reserved
-        # cell_ids = random.sample(range(1, self.MAZE_W * self.MAZE_H - 1), num_color_list)
+        cell_ids = random.sample(range(1, self.MAZE_W * self.MAZE_H - 1), num_color_list)
         color_list = ['r', 'g', 'b']
         for i in range(num_color_list):
             # sample the set_size number of sell
@@ -537,11 +540,13 @@ class Maze:
         cell_ids = []
         cell_ids.append((self.MAZE_H - 1, 0))
         cell_ids.append((self.MAZE_H - 1, self.MAZE_W - 2))
-        cell_ids.append((0, self.MAZE_W - 2))
-        color_list1 = ['r', 'y']
-        color_list2 = ['g', 'b']
-        # color_list1 = ['r']
-        # color_list2 = ['b']
+        if self.complex_maze:
+            cell_ids.append((0, self.MAZE_W - 2))
+            color_list1 = ['r', 'y']
+            color_list2 = ['g', 'b']
+        else:
+            color_list1 = ['r']
+            color_list2 = ['b']
 
         cell_color = random.sample(color_list1, 1)[0]
         cid = cell_ids[0]

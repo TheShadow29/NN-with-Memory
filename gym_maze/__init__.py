@@ -7,6 +7,18 @@ register(
 )
 
 register(
+    id='maze-7x7-simple-v0',
+    entry_point='gym_maze.envs:MazeEnv7x7Simple',
+    timestep_limit=4000,
+)
+
+register(
+    id='maze-7x7-complex-v0',
+    entry_point='gym_maze.envs:MazeEnv7x7Complex',
+    timestep_limit=4000,
+)
+
+register(
     id='maze-v0',
     entry_point='gym_maze.envs:MazeEnvSample5x5',
     timestep_limit=2000,

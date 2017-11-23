@@ -13,14 +13,14 @@ class MazeEnv(gym.Env):
 
     ACTION = ["N", "W", "S", "E"]
 
-    def __init__(self, maze_file=None, maze_size=None, mode=None):
+    def __init__(self, maze_file=None, maze_size=None, mode=None, complex_maze=False):
 
         self.viewer = None
 
         if maze_file:
             self.maze_view = MazeView2D(maze_name="OpenAI Gym - Maze (%s)" % maze_file,
                                         maze_file_path=maze_file,
-                                        screen_size=(640, 640))
+                                        screen_size=(640, 640), complex_maze=complex_maze)
         elif maze_size:
             if mode == "plus":
                 has_loops = True
@@ -31,7 +31,7 @@ class MazeEnv(gym.Env):
 
             self.maze_view = MazeView2D(maze_name="OpenAI Gym - Maze (%d x %d)" % maze_size,
                                         maze_size=maze_size, screen_size=(640, 640),
-                                        has_loops=has_loops, num_portals=num_portals)
+                                        has_loops=has_loops, num_portals=num_portals, complex_maze=complex_maze)
         else:
             raise AttributeError("One must supply either a maze_file path (str) or the maze_size (tuple of length 2)")
 
@@ -146,6 +146,16 @@ class MazeEnvTest(MazeEnv):
         # super(MazeEnvTest, self).__init__(maze_file="maze2d_006.npy")
         # super(MazeEnvTest, self).__init__(maze_size=(5, 5))
         super(MazeEnvTest, self).__init__(maze_size=(5, 5))
+
+
+class MazeEnv7x7Simple(MazeEnv):
+    def __init__(self):
+        super(MazeEnv7x7Simple, self).__init__(maze_size=(7, 7))
+
+
+class MazeEnv7x7Complex(MazeEnv):
+    def __init__(self):
+        super(MazeEnv7x7Complex, self).__init__(maze_size=(7, 7), complex_maze=True)
 
 
 class MazeEnvSample5x5(MazeEnv):

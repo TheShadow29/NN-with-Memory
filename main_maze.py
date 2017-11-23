@@ -13,16 +13,15 @@ import numpy as np
 import pdb
 
 if __name__ == "__main__":
-    env_name = 'maze-test-v0'
+    env_name = 'maze-7x7-complex-v0'
     env = gym.make(env_name)
     obs_size = env.observation_space.shape[0]  # Size of observation from environment
-    # max_obs = int(env.observation_space.high[0])
     state_length = 50  # Number of most recent frames to produce the input to the network
     action_size = env.action_space.n  # Number of actions
     gamma = 0.99  # Discount factor
     max_episode_length = 10000  # Time after which an episode is terminated
-    n_episodes = 15000  # Number of episodes the agent plays
-    agent_model = 'drqn'
+    n_steps = 2000000  # Number of steps the agent plays
+    agent_model = 'rmqn'
 
     epsilon_init = 1.0  # Initial value of epsilon in epsilon-greedy
     epsilon_min = 0.1  # Minimum value of epsilon in epsilon-greedy
@@ -38,9 +37,11 @@ if __name__ == "__main__":
     momentum = 0.95  # Momentum used by RMSProp
     min_grad = 0.01  # Constant added to the squared gradient in the denominator of the RMSProp update
 
-    save_interval = 30000  # The frequency with which the network is saved
-    load_network = False
-    load_network_path = 'saved_networks/' + env_name + '/' + '1510501206'
+    train = True
+    save_interval = 500000  # The frequency with which the network is saved
+    load_network = True
+    load_fresh = True
+    load_network_path = 'saved_networks/maze-test-v0/5x5rmqnComplex'
     save_network_path = 'saved_networks/' + env_name + '/' + str(time.time()).split('.')[0]
     save_summary_path = 'summary/' + env_name + '/' + str(time.time()).split('.')[0]
     os.makedirs(os.path.dirname(save_network_path), exist_ok=True)
@@ -68,58 +69,78 @@ if __name__ == "__main__":
                                 momentum=momentum, min_grad=min_grad)
 
     if load_network:
-        agent.load(load_network_path)
+        agent.load(load_network_path, load_fresh)
 
     done = False
-    # timeout_spree = 0
+    end = False
+    e = 0
 
-    for e in range(n_episodes):
-        obs = env.reset()
-        total_reward = 0
-        total_max_q = 0
-        episode_duration = 0
-        state = gym_util.init_state(obs, obs_size, state_length)
-        # timeout_spree += 1
-        for time in range(max_episode_length):
-            # env.render()
-            episode_duration += 1
-            action, q_value = agent.act(state)
-            action = int(action)
-            total_max_q += q_value
-            # pdb.set_trace()
-            next_obs, reward, done, _ = env.step(action)
-            # reward = np.clip(reward, -1, 1)
-            next_state = gym_util.add_obs(state, next_obs, obs_size)
-            total_reward += reward
-            agent.remember(state, action, reward, next_state, done)
-            state = next_state
+    if train:
+        r_cumulative = 0
+        while not end:
+            e += 1
+            obs = env.reset()
+            r_episode = 0
+            total_max_q = 0
+            episode_duration = 0
+            state = gym_util.init_state(obs, obs_size, state_length)
+            for time in range(max_episode_length):
+                episode_duration += 1
+                action, q_value = agent.act(state)
+                action = int(action)
+                total_max_q += q_value
+                next_obs, reward, done, _ = env.step(action)
+                next_state = gym_util.add_obs(state, next_obs, obs_size)
+                r_episode += reward
+                r_cumulative += reward
+                agent.remember(state, action, reward, next_state, done)
+                state = next_state
 
-            if agent.t > init_replay_size:
-                # Train network
-                if agent.t % train_interval == 0:
-                    agent.replay(batch_size)
+                ts = agent.t
 
-                # Update target network
-                if agent.t % target_update_interval == 0:
-                    agent.update_target()
+                log_value('Reward', reward, ts)
+                log_value('Cumulative reward', r_cumulative, ts)
+                log_value('Q value', q_value, ts)
 
-                # Save network
-                if agent.t % save_interval == 0:
-                    agent.save(save_network_path)
+                if ts > n_steps:
+                    end = True
+                    agent.save(save_network_path + '.' + str(ts))
+                    break
 
-            if done:
-                print("episode: {}/{}, score: {}, avg max q: {}, episode duration: {}, e: {:.2}"
-                      .format(e, n_episodes, total_reward, total_max_q / episode_duration, episode_duration,
-                              agent.epsilon))
-                log_value('Episode', e, e)
-                log_value('Score', total_reward, e)
-                log_value('Avg max Q', total_max_q / episode_duration, e)
-                log_value('Episode duration', episode_duration, e)
-                log_value('Epsilon', agent.epsilon, e)
-                # if episode_duration < 5000:
-                #     timeout_spree = 0
-                break
+                if ts > init_replay_size:
+                    # Train network
+                    if ts % train_interval == 0:
+                        agent.replay(batch_size)
 
-        # if timeout_spree >= 20:
-        #     print("Ending since agent didn't finish last 20 episodes")
-        #     break
+                    # Update target network
+                    if ts % target_update_interval == 0:
+                        agent.update_target()
+
+                    # Save network
+                    if ts % save_interval == 0:
+                        agent.save(save_network_path + '.' + str(ts))
+
+                if done:
+                    print("steps: {}/{}, score: {}, avg max q: {}, episode duration: {}, e: {:.2}"
+                          .format(ts, n_steps, r_episode, total_max_q / episode_duration, episode_duration,
+                                  agent.epsilon))
+                    log_value('Score', r_episode, e)
+                    log_value('Cumulative score', r_cumulative, e)
+                    log_value('Avg max Q', total_max_q / episode_duration, e)
+                    log_value('Episode duration', episode_duration, e)
+                    log_value('Epsilon', agent.epsilon, e)
+                    break
+    else:
+        while True:
+            obs = env.reset()
+            state = gym_util.init_state(obs, obs_size, state_length)
+            for time in range(max_episode_length):
+                env.render()
+                action, q_value = agent.act(state)
+                action = int(action)
+                next_obs, reward, done, _ = env.step(action)
+                next_state = gym_util.add_obs(state, next_obs, obs_size)
+                state = next_state
+
+                if done:
+                    break
